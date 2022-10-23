@@ -7,9 +7,9 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use gtk4::{
-    gdk, glib, glib::clone, glib::translate::IntoGlib, prelude::*, subclass::prelude::*, Align,
-    Box, BoxLayout, Button, ColorChooserWidget, CompositeTemplate, MenuButton, Orientation,
-    Popover, PositionType, Widget,
+    gdk, glib, glib::clone, glib::translate::IntoGlib, prelude::*,
+    subclass::prelude::*, Align, Box, BoxLayout, Button, ColorChooserWidget,
+    CompositeTemplate, MenuButton, Orientation, Popover, PositionType, Widget,
 };
 
 use once_cell::sync::Lazy;
@@ -52,12 +52,16 @@ mod imp {
                 colorpicker_button: TemplateChild::<MenuButton>::default(),
                 colorpicker_popover: TemplateChild::<Popover>::default(),
                 colorchooser: TemplateChild::<ColorChooserWidget>::default(),
-                colorchooser_editor_gobackbutton: TemplateChild::<Button>::default(),
-                colorchooser_editor_selectbutton: TemplateChild::<Button>::default(),
+                colorchooser_editor_gobackbutton:
+                    TemplateChild::<Button>::default(),
+                colorchooser_editor_selectbutton:
+                    TemplateChild::<Button>::default(),
 
                 position: Cell::new(PositionType::Right),
                 selected: Cell::new(0),
-                amount_colorbuttons: Cell::new(super::ColorPicker::AMOUNT_COLORBUTTONS_DEFAULT),
+                amount_colorbuttons: Cell::new(
+                    super::ColorPicker::AMOUNT_COLORBUTTONS_DEFAULT,
+                ),
                 current_color: Cell::new(gdk::RGBA::from_compose_color(
                     super::ColorPicker::COLOR_DEFAULT,
                 )),
@@ -90,7 +94,8 @@ mod imp {
             let colorchooser = self.colorchooser.get();
             let first_colorsetter = self.first_colorsetter.get();
             let colorpicker_popover = self.colorpicker_popover.get();
-            let colorchooser_editor_gobackbutton = self.colorchooser_editor_gobackbutton.get();
+            let colorchooser_editor_gobackbutton =
+                self.colorchooser_editor_gobackbutton.get();
 
             self.first_colorsetter
                 .connect_clicked(clone!(@weak obj => move |first_colorsetter| {
@@ -122,12 +127,13 @@ mod imp {
                 }),
             );
 
-            self.colorchooser
-                .connect_rgba_notify(clone!(@weak obj => move |colorchooser| {
+            self.colorchooser.connect_rgba_notify(
+                clone!(@weak obj => move |colorchooser| {
                     let color = colorchooser.rgba();
                     obj.set_property("current-color", &color.to_value());
 
-                }));
+                }),
+            );
 
             obj.connect_notify_local(Some("current-color"), clone!(@weak first_colorsetter, @weak self.colorsetters as colorsetters => move |obj, _param| {
                 let current_color = obj.current_color();
@@ -219,23 +225,29 @@ mod imp {
 
                     match position {
                         PositionType::Left => {
-                            self.colorpicker_popover.set_position(PositionType::Right);
-                            layout_manager.set_orientation(Orientation::Vertical);
-                            self.setterbox.set_orientation(Orientation::Vertical);
+                            self.colorpicker_popover
+                                .set_position(PositionType::Right);
+                            layout_manager
+                                .set_orientation(Orientation::Vertical);
+                            self.setterbox
+                                .set_orientation(Orientation::Vertical);
                             self.colorpicker_button.set_margin_start(0);
                             self.colorpicker_button.set_margin_end(0);
                             self.colorpicker_button.set_margin_top(3);
                             self.colorpicker_button.set_margin_bottom(0);
-                        }
+                        },
                         PositionType::Right => {
-                            self.colorpicker_popover.set_position(PositionType::Left);
-                            layout_manager.set_orientation(Orientation::Vertical);
-                            self.setterbox.set_orientation(Orientation::Vertical);
+                            self.colorpicker_popover
+                                .set_position(PositionType::Left);
+                            layout_manager
+                                .set_orientation(Orientation::Vertical);
+                            self.setterbox
+                                .set_orientation(Orientation::Vertical);
                             self.colorpicker_button.set_margin_start(0);
                             self.colorpicker_button.set_margin_end(0);
                             self.colorpicker_button.set_margin_top(3);
                             self.colorpicker_button.set_margin_bottom(0);
-                        }
+                        },
                         PositionType::Top => {
                             self.colorpicker_popover.set_position(PositionType::Bottom);
                             layout_manager.set_orientation(Orientation::Horizontal);
@@ -244,7 +256,7 @@ mod imp {
                             self.colorpicker_button.set_margin_end(0);
                             self.colorpicker_button.set_margin_top(0);
                             self.colorpicker_button.set_margin_bottom(0);
-                        }
+                        },
                         PositionType::Bottom => {
                             self.colorpicker_popover.set_position(PositionType::Top);
                             layout_manager.set_orientation(Orientation::Horizontal);
@@ -253,10 +265,10 @@ mod imp {
                             self.colorpicker_button.set_margin_end(0);
                             self.colorpicker_button.set_margin_top(0);
                             self.colorpicker_button.set_margin_bottom(0);
-                        }
-                        _ => {}
+                        },
+                        _ => {},
                     }
-                }
+                },
                 "selected" => {
                     // Clamping to the current amount of colorbuttons
                     let index = value
@@ -275,28 +287,36 @@ mod imp {
                             colorsetter.set_active(true);
                         }
                     }
-                }
+                },
                 "amount-colorbuttons" => {
-                    self.amount_colorbuttons
-                        .set(value.get::<u32>().expect("value not of type `u32`"));
+                    self.amount_colorbuttons.set(
+                        value.get::<u32>().expect("value not of type `u32`"),
+                    );
                     self.init_colorsetters(obj);
-                }
+                },
                 "current-color" => {
                     self.current_color.set(
                         value
                             .get::<gdk::RGBA>()
                             .expect("value not of type `gdk::RGBA`"),
                     );
-                }
+                },
                 _ => panic!("invalid property name"),
             }
         }
 
-        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+        fn property(
+            &self,
+            _obj: &Self::Type,
+            _id: usize,
+            pspec: &glib::ParamSpec,
+        ) -> glib::Value {
             match pspec.name() {
                 "position" => self.position.get().to_value(),
                 "selected" => self.selected.get().to_value(),
-                "amount-colorbuttons" => self.amount_colorbuttons.get().to_value(),
+                "amount-colorbuttons" => {
+                    self.amount_colorbuttons.get().to_value()
+                },
                 "current-color" => self.current_color.get().to_value(),
                 _ => panic!("invalid property name"),
             }
@@ -317,7 +337,9 @@ mod imp {
             self.colorsetters.borrow_mut().clear();
 
             // init the colorsetters. Index starts at one to skip the first button
-            for i in super::ColorPicker::AMOUNT_COLORBUTTONS_MIN..self.amount_colorbuttons.get() {
+            for i in super::ColorPicker::AMOUNT_COLORBUTTONS_MIN
+                ..self.amount_colorbuttons.get()
+            {
                 let setter_button = ColorSetter::new();
 
                 setter_button.set_hexpand(true);
@@ -345,18 +367,32 @@ mod imp {
         }
 
         fn generate_colors(&self) {
-            let color_step =
-                (2.0 * std::f32::consts::PI) / ((self.amount_colorbuttons.get() - 1) as f32);
+            let color_step = (2.0 * std::f32::consts::PI)
+                / ((self.amount_colorbuttons.get() - 1) as f32);
             let rgb_offset = (2.0 / 3.0) * std::f32::consts::PI;
             let color_offset = (5.0 / 4.0) * std::f32::consts::PI + 0.4;
 
-            for (i, setter_button) in self.colorsetters.borrow().iter().rev().enumerate() {
+            for (i, setter_button) in
+                self.colorsetters.borrow().iter().rev().enumerate()
+            {
                 let i = i + 1;
 
                 let color = gdk::RGBA::new(
-                    0.5 * (i as f32 * color_step + 0.0 * rgb_offset + color_offset).sin() + 0.5,
-                    0.5 * (i as f32 * color_step + 1.0 * rgb_offset + color_offset).sin() + 0.5,
-                    0.5 * (i as f32 * color_step + 2.0 * rgb_offset + color_offset).sin() + 0.5,
+                    0.5 * (i as f32 * color_step
+                        + 0.0 * rgb_offset
+                        + color_offset)
+                        .sin()
+                        + 0.5,
+                    0.5 * (i as f32 * color_step
+                        + 1.0 * rgb_offset
+                        + color_offset)
+                        .sin()
+                        + 0.5,
+                    0.5 * (i as f32 * color_step
+                        + 2.0 * rgb_offset
+                        + color_offset)
+                        .sin()
+                        + 0.5,
                     1.0,
                 );
                 setter_button.set_property("color", &color.to_value());
@@ -450,7 +486,9 @@ impl ColorPicker {
                 .first_colorsetter
                 .set_color(gdk::RGBA::from_compose_color(first_color));
         }
-        for (&color, colorsetter) in all_colors_iter.zip(self.imp().colorsetters.borrow().iter()) {
+        for (&color, colorsetter) in
+            all_colors_iter.zip(self.imp().colorsetters.borrow().iter())
+        {
             colorsetter.set_color(gdk::RGBA::from_compose_color(color));
         }
     }

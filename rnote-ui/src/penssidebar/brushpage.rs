@@ -1,7 +1,7 @@
 use adw::prelude::*;
 use gtk4::{
-    gdk, glib, glib::clone, subclass::prelude::*, CompositeTemplate, Image, ListBox, MenuButton,
-    Popover, SpinButton,
+    gdk, glib, glib::clone, subclass::prelude::*, CompositeTemplate, Image,
+    ListBox, MenuButton, Popover, SpinButton,
 };
 use num_traits::cast::ToPrimitive;
 
@@ -10,7 +10,9 @@ use rnote_compose::style::PressureCurve;
 use rnote_engine::pens::Brush;
 
 use crate::{appwindow::RnoteAppWindow, ColorPicker};
-use rnote_compose::style::textured::{TexturedDotsDistribution, TexturedOptions};
+use rnote_compose::style::textured::{
+    TexturedDotsDistribution, TexturedOptions,
+};
 use rnote_engine::pens::brush::BrushStyle;
 use rnote_engine::utils::GdkRGBAHelpers;
 
@@ -18,7 +20,9 @@ mod imp {
     use super::*;
 
     #[derive(Default, Debug, CompositeTemplate)]
-    #[template(resource = "/com/github/flxzt/rnote/ui/penssidebar/brushpage.ui")]
+    #[template(
+        resource = "/com/github/flxzt/rnote/ui/penssidebar/brushpage.ui"
+    )]
     pub struct BrushPage {
         #[template_child]
         pub width_spinbutton: TemplateChild<SpinButton>,
@@ -32,6 +36,8 @@ mod imp {
         pub brushstyle_listbox: TemplateChild<ListBox>,
         #[template_child]
         pub brushstyle_marker_row: TemplateChild<adw::ActionRow>,
+        #[template_child]
+        pub brushstyle_preset: TemplateChild<MenuButton>,
         #[template_child]
         pub brushstyle_solid_row: TemplateChild<adw::ActionRow>,
         #[template_child]
@@ -130,6 +136,10 @@ impl BrushPage {
         self.imp().brushstyle_marker_row.get()
     }
 
+    pub fn brushstyle_preset(&self) -> MenuButton {
+        self.imp().brushstyle_preset.get()
+    }
+
     pub fn brushstyle_solid_row(&self) -> adw::ActionRow {
         self.imp().brushstyle_solid_row.get()
     }
@@ -179,7 +189,10 @@ impl BrushPage {
     }
 
     pub fn solidstyle_pressure_curve(&self) -> PressureCurve {
-        PressureCurve::try_from(self.imp().solidstyle_pressure_curves_row.get().selected()).unwrap()
+        PressureCurve::try_from(
+            self.imp().solidstyle_pressure_curves_row.get().selected(),
+        )
+        .unwrap()
     }
 
     pub fn set_solidstyle_pressure_curve(&self, pressure_curve: PressureCurve) {
@@ -198,7 +211,10 @@ impl BrushPage {
         .unwrap()
     }
 
-    pub fn set_texturedstyle_distribution_variant(&self, distribution: TexturedDotsDistribution) {
+    pub fn set_texturedstyle_distribution_variant(
+        &self,
+        distribution: TexturedDotsDistribution,
+    ) {
         let position = distribution.to_u32().unwrap();
 
         self.imp()
@@ -400,7 +416,8 @@ impl BrushPage {
     }
 
     pub fn refresh_ui(&self, appwindow: &RnoteAppWindow) {
-        let brush = appwindow.canvas().engine().borrow().penholder.brush.clone();
+        let brush =
+            appwindow.canvas().engine().borrow().penholder.brush.clone();
 
         self.set_solidstyle_pressure_curve(brush.solid_options.pressure_curve);
         self.texturedstyle_density_spinbutton()
@@ -409,21 +426,23 @@ impl BrushPage {
             .set_value(brush.textured_options.radii[0]);
         self.texturedstyle_radius_y_spinbutton()
             .set_value(brush.textured_options.radii[1]);
-        self.set_texturedstyle_distribution_variant(brush.textured_options.distribution);
+        self.set_texturedstyle_distribution_variant(
+            brush.textured_options.distribution,
+        );
 
         match brush.builder_type {
             PenPathBuilderType::Simple => {
                 self.brush_buildertype_listbox()
                     .select_row(Some(&self.brush_buildertype_simple()));
-            }
+            },
             PenPathBuilderType::Curved => {
                 self.brush_buildertype_listbox()
                     .select_row(Some(&self.brush_buildertype_curved()));
-            }
+            },
             PenPathBuilderType::Modeled => {
                 self.brush_buildertype_listbox()
                     .select_row(Some(&self.brush_buildertype_modeled()));
-            }
+            },
         }
 
         match brush.style {
@@ -436,7 +455,7 @@ impl BrushPage {
                     .set_current_color(brush.marker_options.stroke_color);
                 self.brushstyle_image()
                     .set_icon_name(Some("pen-brush-style-marker-symbolic"));
-            }
+            },
             BrushStyle::Solid => {
                 self.brushstyle_listbox()
                     .select_row(Some(&self.brushstyle_solid_row()));
@@ -446,7 +465,7 @@ impl BrushPage {
                     .set_current_color(brush.solid_options.stroke_color);
                 self.brushstyle_image()
                     .set_icon_name(Some("pen-brush-style-solid-symbolic"));
-            }
+            },
             BrushStyle::Textured => {
                 self.brushstyle_listbox()
                     .select_row(Some(&self.brushstyle_textured_row()));
@@ -456,7 +475,7 @@ impl BrushPage {
                     .set_current_color(brush.textured_options.stroke_color);
                 self.brushstyle_image()
                     .set_icon_name(Some("pen-brush-style-textured-symbolic"));
-            }
+            },
         }
     }
 }

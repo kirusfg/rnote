@@ -10,11 +10,12 @@ use std::{
 use adw::{prelude::*, subclass::prelude::*};
 use gettextrs::gettext;
 use gtk4::{
-    gdk, gio, glib, glib::clone, Align, Application, ArrowType, Box, Button, CompositeTemplate,
-    CornerType, CssProvider, EventControllerScroll, EventControllerScrollFlags, EventSequenceState,
-    FileChooserNative, GestureDrag, GestureZoom, Grid, IconTheme, Inhibit, PackType, PolicyType,
-    PositionType, ProgressBar, PropagationPhase, Revealer, ScrolledWindow, Separator, StyleContext,
-    ToggleButton,
+    gdk, gio, glib, glib::clone, Align, Application, ArrowType, Box, Button,
+    CompositeTemplate, CornerType, CssProvider, EventControllerScroll,
+    EventControllerScrollFlags, EventSequenceState, FileChooserNative,
+    GestureDrag, GestureZoom, Grid, IconTheme, Inhibit, PackType, PolicyType,
+    PositionType, ProgressBar, PropagationPhase, Revealer, ScrolledWindow,
+    Separator, StyleContext, ToggleButton,
 };
 use once_cell::sync::Lazy;
 
@@ -27,7 +28,9 @@ use crate::{
     workspacebrowser::WorkspaceBrowser,
     {dialogs, mainheader::MainHeader},
 };
-use rnote_engine::{engine::EngineTask, pens::penholder::PenStyle, Camera, WidgetFlags};
+use rnote_engine::{
+    engine::EngineTask, pens::penholder::PenStyle, Camera, WidgetFlags,
+};
 
 mod imp {
     use super::*;
@@ -140,11 +143,12 @@ mod imp {
                 .propagation_phase(PropagationPhase::Capture)
                 .build();
 
-            let canvas_zoom_scroll_controller = EventControllerScroll::builder()
-                .name("canvas_zoom_scroll_controller")
-                .propagation_phase(PropagationPhase::Bubble)
-                .flags(EventControllerScrollFlags::VERTICAL)
-                .build();
+            let canvas_zoom_scroll_controller =
+                EventControllerScroll::builder()
+                    .name("canvas_zoom_scroll_controller")
+                    .propagation_phase(PropagationPhase::Bubble)
+                    .flags(EventControllerScrollFlags::VERTICAL)
+                    .build();
 
             let canvas_mouse_drag_middle_gesture = GestureDrag::builder()
                 .name("canvas_mouse_drag_middle_gesture")
@@ -160,7 +164,9 @@ mod imp {
 
                 unsaved_changes: Cell::new(false),
                 autosave: Cell::new(true),
-                autosave_interval_secs: Cell::new(super::RnoteAppWindow::AUTOSAVE_INTERVAL_DEFAULT),
+                autosave_interval_secs: Cell::new(
+                    super::RnoteAppWindow::AUTOSAVE_INTERVAL_DEFAULT,
+                ),
                 righthanded: Cell::new(true),
                 permanently_hide_canvas_scrollbars: Cell::new(false),
 
@@ -174,7 +180,8 @@ mod imp {
                 main_grid: TemplateChild::<Grid>::default(),
                 canvas_box: TemplateChild::<gtk4::Box>::default(),
                 canvas_quickactions_box: TemplateChild::<gtk4::Box>::default(),
-                canvas_fixedsize_quickactions_revealer: TemplateChild::<Revealer>::default(),
+                canvas_fixedsize_quickactions_revealer:
+                    TemplateChild::<Revealer>::default(),
                 undo_button: TemplateChild::<Button>::default(),
                 redo_button: TemplateChild::<Button>::default(),
                 canvas_progressbar: TemplateChild::<ProgressBar>::default(),
@@ -195,12 +202,15 @@ mod imp {
                 flapreveal_toggle: TemplateChild::<ToggleButton>::default(),
                 flap_menus_box: TemplateChild::<Box>::default(),
                 mainheader: TemplateChild::<MainHeader>::default(),
-                narrow_pens_toggles_revealer: TemplateChild::<Revealer>::default(),
+                narrow_pens_toggles_revealer:
+                    TemplateChild::<Revealer>::default(),
                 narrow_brush_toggle: TemplateChild::<ToggleButton>::default(),
                 narrow_shaper_toggle: TemplateChild::<ToggleButton>::default(),
-                narrow_typewriter_toggle: TemplateChild::<ToggleButton>::default(),
+                narrow_typewriter_toggle:
+                    TemplateChild::<ToggleButton>::default(),
                 narrow_eraser_toggle: TemplateChild::<ToggleButton>::default(),
-                narrow_selector_toggle: TemplateChild::<ToggleButton>::default(),
+                narrow_selector_toggle: TemplateChild::<ToggleButton>::default(
+                ),
                 narrow_tools_toggle: TemplateChild::<ToggleButton>::default(),
                 penssidebar: TemplateChild::<PensSideBar>::default(),
             }
@@ -246,7 +256,9 @@ mod imp {
 
             // Load the application css
             let css = CssProvider::new();
-            css.load_from_resource((String::from(config::APP_IDPATH) + "ui/style.css").as_str());
+            css.load_from_resource(
+                (String::from(config::APP_IDPATH) + "ui/style.css").as_str(),
+            );
 
             let display = gdk::Display::default().unwrap();
             StyleContext::add_provider_for_display(
@@ -344,15 +356,22 @@ mod imp {
             PROPERTIES.as_ref()
         }
 
-        fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+        fn property(
+            &self,
+            _obj: &Self::Type,
+            _id: usize,
+            pspec: &glib::ParamSpec,
+        ) -> glib::Value {
             match pspec.name() {
                 "unsaved-changes" => self.unsaved_changes.get().to_value(),
                 "autosave" => self.autosave.get().to_value(),
-                "autosave-interval-secs" => self.autosave_interval_secs.get().to_value(),
+                "autosave-interval-secs" => {
+                    self.autosave_interval_secs.get().to_value()
+                },
                 "righthanded" => self.righthanded.get().to_value(),
                 "permanently-hide-canvas-scrollbars" => {
                     self.permanently_hide_canvas_scrollbars.get().to_value()
-                }
+                },
                 _ => unimplemented!(),
             }
         }
@@ -366,10 +385,11 @@ mod imp {
         ) {
             match pspec.name() {
                 "unsaved-changes" => {
-                    let unsaved_changes: bool =
-                        value.get().expect("The value needs to be of type `bool`.");
+                    let unsaved_changes: bool = value
+                        .get()
+                        .expect("The value needs to be of type `bool`.");
                     self.unsaved_changes.replace(unsaved_changes);
-                }
+                },
                 "autosave" => {
                     let autosave = value
                         .get::<bool>()
@@ -384,7 +404,7 @@ mod imp {
                     {
                         autosave_source_id.remove();
                     }
-                }
+                },
                 "autosave-interval-secs" => {
                     let autosave_interval_secs = value
                         .get::<u32>()
@@ -395,7 +415,7 @@ mod imp {
                     if self.autosave.get() {
                         self.update_autosave_handler(obj);
                     }
-                }
+                },
                 "righthanded" => {
                     let righthanded = value
                         .get::<bool>()
@@ -404,7 +424,7 @@ mod imp {
                     self.righthanded.replace(righthanded);
 
                     self.handle_righthanded_property(righthanded);
-                }
+                },
                 "permanently-hide-canvas-scrollbars" => {
                     let permanently_hide_canvas_scrollbars = value
                         .get::<bool>()
@@ -420,7 +440,7 @@ mod imp {
                         self.canvas_scroller.hscrollbar().set_visible(true);
                         self.canvas_scroller.vscrollbar().set_visible(true);
                     }
-                }
+                },
                 _ => unimplemented!(),
             }
         }
@@ -483,7 +503,10 @@ mod imp {
 
             self.flapreveal_toggle
                 .bind_property("active", &flap, "reveal-flap")
-                .flags(glib::BindingFlags::SYNC_CREATE | glib::BindingFlags::BIDIRECTIONAL)
+                .flags(
+                    glib::BindingFlags::SYNC_CREATE
+                        | glib::BindingFlags::BIDIRECTIONAL,
+                )
                 .build();
 
             self.flapreveal_toggle.connect_toggled(
@@ -638,18 +661,34 @@ mod imp {
                     .main_grid()
                     .remove(&appwindow.narrow_pens_toggles_revealer());
                 appwindow.main_grid().remove(&appwindow.canvas_box());
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.sidebar_grid(), 0, 1, 1, 2);
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.sidebar_sep(), 1, 1, 1, 2);
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.narrow_pens_toggles_revealer(), 2, 1, 1, 1);
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.canvas_box(), 2, 2, 1, 1);
+                appwindow.main_grid().attach(
+                    &appwindow.sidebar_grid(),
+                    0,
+                    1,
+                    1,
+                    2,
+                );
+                appwindow.main_grid().attach(
+                    &appwindow.sidebar_sep(),
+                    1,
+                    1,
+                    1,
+                    2,
+                );
+                appwindow.main_grid().attach(
+                    &appwindow.narrow_pens_toggles_revealer(),
+                    2,
+                    1,
+                    1,
+                    1,
+                );
+                appwindow.main_grid().attach(
+                    &appwindow.canvas_box(),
+                    2,
+                    2,
+                    1,
+                    1,
+                );
                 appwindow.canvas_quickactions_box().set_halign(Align::End);
                 appwindow
                     .mainheader()
@@ -660,10 +699,9 @@ mod imp {
                     .mainheader()
                     .headerbar()
                     .remove(&appwindow.mainheader().pens_toggles_squeezer());
-                appwindow
-                    .mainheader()
-                    .headerbar()
-                    .pack_start(&appwindow.mainheader().pens_toggles_squeezer());
+                appwindow.mainheader().headerbar().pack_start(
+                    &appwindow.mainheader().pens_toggles_squeezer(),
+                );
                 appwindow
                     .workspacebrowser()
                     .grid()
@@ -705,6 +743,11 @@ mod imp {
                     .settings_panel()
                     .settings_scroller()
                     .set_window_placement(CornerType::TopRight);
+                appwindow
+                    .penssidebar()
+                    .brush_page()
+                    .brushstyle_preset()
+                    .set_direction(ArrowType::Right);
                 appwindow
                     .penssidebar()
                     .brush_page()
@@ -763,18 +806,34 @@ mod imp {
                     .remove(&appwindow.narrow_pens_toggles_revealer());
                 appwindow.main_grid().remove(&appwindow.sidebar_sep());
                 appwindow.main_grid().remove(&appwindow.sidebar_grid());
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.canvas_box(), 0, 2, 1, 1);
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.narrow_pens_toggles_revealer(), 0, 1, 1, 1);
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.sidebar_sep(), 1, 1, 1, 2);
-                appwindow
-                    .main_grid()
-                    .attach(&appwindow.sidebar_grid(), 2, 1, 1, 2);
+                appwindow.main_grid().attach(
+                    &appwindow.canvas_box(),
+                    0,
+                    2,
+                    1,
+                    1,
+                );
+                appwindow.main_grid().attach(
+                    &appwindow.narrow_pens_toggles_revealer(),
+                    0,
+                    1,
+                    1,
+                    1,
+                );
+                appwindow.main_grid().attach(
+                    &appwindow.sidebar_sep(),
+                    1,
+                    1,
+                    1,
+                    2,
+                );
+                appwindow.main_grid().attach(
+                    &appwindow.sidebar_grid(),
+                    2,
+                    1,
+                    1,
+                    2,
+                );
                 appwindow.canvas_quickactions_box().set_halign(Align::Start);
                 appwindow
                     .mainheader()
@@ -830,6 +889,11 @@ mod imp {
                     .settings_panel()
                     .settings_scroller()
                     .set_window_placement(CornerType::TopLeft);
+                appwindow
+                    .penssidebar()
+                    .brush_page()
+                    .brushstyle_preset()
+                    .set_direction(ArrowType::Left);
                 appwindow
                     .penssidebar()
                     .brush_page()
@@ -902,14 +966,18 @@ impl RnoteAppWindow {
     const FLAP_FOLDED_RESIZE_MARGIN: u32 = 64;
 
     pub fn new(app: &Application) -> Self {
-        glib::Object::new(&[("application", app)]).expect("Failed to create `RnoteAppWindow`.")
+        glib::Object::new(&[("application", app)])
+            .expect("Failed to create `RnoteAppWindow`.")
     }
 
     /// Called to close the window
     pub fn close_force(&self) {
         // Saving all state
         if let Err(err) = self.save_to_settings() {
-            log::error!("Failed to save appwindow to settings, with Err `{}`", &err);
+            log::error!(
+                "Failed to save appwindow to settings, with Err `{}`",
+                &err
+            );
         }
 
         // Closing the state tasks channel receiver
@@ -962,7 +1030,10 @@ impl RnoteAppWindow {
     }
 
     pub fn set_autosave_interval_secs(&self, autosave_interval_secs: u32) {
-        self.set_property("autosave-interval-secs", autosave_interval_secs.to_value());
+        self.set_property(
+            "autosave-interval-secs",
+            autosave_interval_secs.to_value(),
+        );
     }
 
     pub fn righthanded(&self) -> bool {
@@ -977,7 +1048,10 @@ impl RnoteAppWindow {
         self.property::<bool>("permanently_hide_canvas_scrollbars")
     }
 
-    pub fn set_permanently_hide_canvas_scrollbars(&self, permanently_hide_canvas_scrollbars: bool) {
+    pub fn set_permanently_hide_canvas_scrollbars(
+        &self,
+        permanently_hide_canvas_scrollbars: bool,
+    ) {
         self.set_property(
             "permanently_hide_canvas_scrollbars",
             permanently_hide_canvas_scrollbars.to_value(),
@@ -1146,7 +1220,9 @@ impl RnoteAppWindow {
 
         // add icon theme resource path because automatic lookup does not work in the devel build.
         let app_icon_theme = IconTheme::for_display(&self.display());
-        app_icon_theme.add_resource_path((String::from(config::APP_IDPATH) + "icons").as_str());
+        app_icon_theme.add_resource_path(
+            (String::from(config::APP_IDPATH) + "icons").as_str(),
+        );
 
         self.setup_input();
 
@@ -1302,7 +1378,8 @@ impl RnoteAppWindow {
 
         // Move Canvas by dragging in empty area
         {
-            let mouse_drag_empty_area_start = Rc::new(Cell::new(na::vector![0.0, 0.0]));
+            let mouse_drag_empty_area_start =
+                Rc::new(Cell::new(na::vector![0.0, 0.0]));
 
             self.imp().canvas_drag_empty_area_gesture.connect_drag_begin(clone!(@strong mouse_drag_empty_area_start, @weak self as appwindow => move |_, _x, _y| {
                 mouse_drag_empty_area_start.set(na::vector![
@@ -1328,7 +1405,8 @@ impl RnoteAppWindow {
             let prev_scale = Rc::new(Cell::new(1_f64));
             let zoom_begin = Rc::new(Cell::new(1_f64));
             let new_zoom = Rc::new(Cell::new(1.0));
-            let bbcenter_begin: Rc<Cell<Option<na::Vector2<f64>>>> = Rc::new(Cell::new(None));
+            let bbcenter_begin: Rc<Cell<Option<na::Vector2<f64>>>> =
+                Rc::new(Cell::new(None));
             let adjs_begin = Rc::new(Cell::new(na::vector![0.0, 0.0]));
 
             self.imp().canvas_zoom_gesture.connect_begin(clone!(
@@ -1412,7 +1490,11 @@ impl RnoteAppWindow {
             self.canvas().queue_resize();
         }
         if widget_flags.refresh_ui {
-            adw::prelude::ActionGroupExt::activate_action(self, "refresh-ui-for-engine", None);
+            adw::prelude::ActionGroupExt::activate_action(
+                self,
+                "refresh-ui-for-engine",
+                None,
+            );
         }
         if widget_flags.indicate_changed_store {
             self.canvas().set_unsaved_changes(true);
@@ -1429,8 +1511,10 @@ impl RnoteAppWindow {
                     self.canvas_scroller()
                         .set_policy(PolicyType::Never, PolicyType::Never);
                 } else {
-                    self.canvas_scroller()
-                        .set_policy(PolicyType::Automatic, PolicyType::Automatic);
+                    self.canvas_scroller().set_policy(
+                        PolicyType::Automatic,
+                        PolicyType::Automatic,
+                    );
                 }
             }
         }
@@ -1440,7 +1524,9 @@ impl RnoteAppWindow {
         if let Some(hide_redo) = widget_flags.hide_redo {
             self.redo_button().set_sensitive(!hide_redo);
         }
-        if let Some(enable_text_preprocessing) = widget_flags.enable_text_preprocessing {
+        if let Some(enable_text_preprocessing) =
+            widget_flags.enable_text_preprocessing
+        {
             self.canvas()
                 .set_text_preprocessing(enable_text_preprocessing);
         }
@@ -1449,7 +1535,8 @@ impl RnoteAppWindow {
     }
 
     pub fn save_engine_config(&self) -> anyhow::Result<()> {
-        let engine_config = self.canvas().engine().borrow().save_engine_config()?;
+        let engine_config =
+            self.canvas().engine().borrow().save_engine_config()?;
         self.app_settings()
             .set_string("engine-config", engine_config.as_str())?;
 
