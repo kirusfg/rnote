@@ -69,7 +69,47 @@ impl DocExportFormat {
     }
 }
 
-/// Document export preferences
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    num_derive::FromPrimitive,
+    num_derive::ToPrimitive,
+)]
+#[serde(rename = "page_range")]
+pub enum PageRange {
+    #[serde(rename = "all")]
+    All,
+    #[serde(rename = "first")]
+    First,
+    #[serde(rename = "last")]
+    Last,
+    // #[serde(rename = "range")]
+    // Range((usize, usize)),
+}
+
+impl Default for PageRange {
+    fn default() -> Self {
+        Self::All
+    }
+}
+
+impl TryFrom<u32> for PageRange {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        num_traits::FromPrimitive::from_u32(value).ok_or_else(|| {
+            anyhow::anyhow!("PageRange try_from::<u32>() for value {} failed", value)
+        })
+    }
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(default, rename = "doc_export_prefs")]
 pub struct DocExportPrefs {
@@ -79,7 +119,8 @@ pub struct DocExportPrefs {
     /// Wether the background pattern should be exported
     #[serde(rename = "with_pattern")]
     pub with_pattern: bool,
-    /// The export format
+    #[serde(rename = "page_range")]
+    pub page_range: PageRange,
     #[serde(rename = "export_format")]
     pub export_format: DocExportFormat,
 }
@@ -89,6 +130,7 @@ impl Default for DocExportPrefs {
         Self {
             with_background: true,
             with_pattern: true,
+            page_range: PageRange::default(),
             export_format: DocExportFormat::default(),
         }
     }
@@ -409,10 +451,21 @@ impl RnoteEngine {
             doc_export_prefs_override.unwrap_or(self.export_prefs.doc_export_prefs);
         let snapshot = self.take_snapshot();
 
-        let pages_strokes = self
-            .pages_bounds_w_content()
+        let pages_bounds = self.pages_bounds_w_content();
+        let last_page_index = pages_bounds.len() - 1;
+
+        let filtered_pages_strokes = pages_bounds
             .into_iter()
-            .map(|page_bounds| {
+            .enumerate()
+            .filter(|(i, _)| {
+                match self.export_prefs.doc_export_prefs.page_range {
+                    PageRange::All => true,
+                    PageRange::First => *i == 0,
+                    PageRange::Last => *i == last_page_index,
+                    // PageRange::Range((first, last)) => *i >= first && *i <= last,
+                }
+            })
+            .map(|(_, page_bounds)| {
                 let strokes_in_viewport = self
                     .store
                     .stroke_keys_as_rendered_intersecting_bounds(page_bounds);
@@ -459,7 +512,9 @@ impl RnoteEngine {
                     let cairo_cx =
                         cairo::Context::new(&surface).context("cario cx new() failed")?;
 
-                    for (i, (page_bounds, page_strokes)) in pages_strokes.into_iter().enumerate() {
+                    for (i, (page_bounds, page_strokes)) in
+                        filtered_pages_strokes.into_iter().enumerate()
+                    {
                         // We can't render the background svg with piet, so we have to do it with cairo.
                         cairo_cx.save()?;
 

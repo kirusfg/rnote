@@ -6,7 +6,7 @@ use gtk4::{
 };
 use num_traits::ToPrimitive;
 use rnote_engine::engine::export::{
-    DocExportFormat, DocExportPrefs, DocPagesExportFormat, DocPagesExportPrefs,
+    DocExportFormat, DocExportPrefs, DocPagesExportFormat, DocPagesExportPrefs, PageRange,
     SelectionExportFormat, SelectionExportPrefs,
 };
 
@@ -98,6 +98,7 @@ pub(crate) fn dialog_export_doc_w_prefs(appwindow: &RnAppWindow, canvas: &RnCanv
     let with_pattern_row: adw::ActionRow = builder.object("export_doc_with_pattern_row").unwrap();
     let with_pattern_switch: Switch = builder.object("export_doc_with_pattern_switch").unwrap();
     let export_format_row: adw::ComboRow = builder.object("export_doc_export_format_row").unwrap();
+    let page_range_row: adw::ComboRow = builder.object("export_doc_page_range_row").unwrap();
     let export_file_label: Label = builder.object("export_doc_export_file_label").unwrap();
     let export_file_button: Button = builder.object("export_doc_export_file_button").unwrap();
 
@@ -110,6 +111,14 @@ pub(crate) fn dialog_export_doc_w_prefs(appwindow: &RnAppWindow, canvas: &RnCanv
         create_filechooser_export_doc(appwindow, canvas.output_file(), &doc_export_prefs);
     with_background_switch.set_active(doc_export_prefs.with_background);
     with_pattern_switch.set_active(doc_export_prefs.with_pattern);
+    // the page range has to be reset to All every time
+    canvas
+        .engine()
+        .borrow_mut()
+        .export_prefs
+        .doc_export_prefs
+        .page_range = PageRange::All;
+    page_range_row.set_selected(PageRange::All.to_u32().unwrap());
     export_format_row.set_selected(doc_export_prefs.export_format.to_u32().unwrap());
 
     if let Some(p) = filechooser.file().and_then(|f| f.path()) {
@@ -174,6 +183,12 @@ pub(crate) fn dialog_export_doc_w_prefs(appwindow: &RnAppWindow, canvas: &RnCanv
         // force the user to pick another file
         export_file_label.set_label(&gettext("- no file selected -"));
         button_confirm.set_sensitive(false);
+    }));
+
+    page_range_row.connect_selected_notify(clone!(@weak canvas => move |row| {
+        let selected = row.selected();
+        let page_range = PageRange::try_from(selected).unwrap();
+        canvas.engine().borrow_mut().export_prefs.doc_export_prefs.page_range = page_range;
     }));
 
     dialog.connect_response(

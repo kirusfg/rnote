@@ -105,6 +105,22 @@
                   </object>
                 </child>
                 <child>
+                  <object class="AdwComboRow" id="export_doc_page_range_row">
+                    <property name="title" translatable="yes">Page range</property>
+                    <property name="subtitle" translatable="yes">The export page range</property>
+                    <property name="model">
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">All</item>
+                          <item translatable="yes">First</item>
+                          <item translatable="yes">Last</item>
+                          <!-- <item translatable="yes">Range</item> -->
+                        </items>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
                   <object class="AdwComboRow" id="export_doc_export_format_row">
                     <property name="title" translatable="yes">Export Format</property>
                     <property name="subtitle" translatable="yes">The export format</property>
